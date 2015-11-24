@@ -81,7 +81,7 @@ const (
 	XYZMS Dimension = 0xE000
 )
 
-// GeomType is the bit mask of the geometry
+// GeomType is the bitmask of the geom
 type GeomType uint16
 
 func (g GeomType) String() string {
@@ -159,8 +159,7 @@ const (
 
 // Big or Little endian identifiers
 const (
-	bigEndian    uint8 = 0x00
-	littleEndian uint8 = 0x01
+	bigEndian uint8 = 0x00
 )
 
 // handler type to convert a stream of bytes to a geometry type
@@ -211,7 +210,6 @@ func newDecoder(r io.Reader) (*decoder, error) {
 	if otype == bigEndian {
 		return &decoder{binary.BigEndian, r}, nil
 	}
-
 	return &decoder{binary.LittleEndian, r}, nil
 
 }
@@ -233,7 +231,7 @@ func Decode(r io.Reader) (Geometry, error) {
 
 	unmarshal := resolve(hdr.gtype)
 
-	if unmarshal != nil {
+	if unmarshal == nil {
 		return nil, fmt.Errorf("Unknown geometry type: %X", hdr.gtype)
 	}
 
@@ -455,7 +453,7 @@ func unmarshalGeometryCollection(d *decoder, hdr *Hdr) (Geometry, error) {
 
 		unmarshal = resolve(ghdr.gtype)
 
-		if unmarshal != nil {
+		if unmarshal == nil {
 			return nil, fmt.Errorf("Unknown geometry type: %X", ghdr.gtype)
 		}
 
