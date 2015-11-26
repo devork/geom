@@ -30,8 +30,8 @@ type Geometry interface {
 	Srid() uint32
 	Dimension() Dimension
 	Type() GeomType
-	EWKT() string
 	GeoJSON(crs, bbox bool) string
+	EWKT() string
 }
 
 // ----------------------------------------------------------------------------

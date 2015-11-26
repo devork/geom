@@ -688,6 +688,5 @@ func TestDimensionsAndEndian(t *testing.T) {
 		for idx := 0; idx < len(dataset.points); idx++ {
 			assert.InDelta(t, dataset.points[idx], point.Coordinate[idx], 1e-9)
 		}
-
 	}
 }
