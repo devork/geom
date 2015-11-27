@@ -22,6 +22,86 @@ import (
 )
 
 // ----------------------------------------------------------------------------
+// Dimension
+// ----------------------------------------------------------------------------
+
+// Dimension of the geometry
+type Dimension uint16
+
+func (d Dimension) String() string {
+	switch d {
+	case XY:
+		return "XY"
+	case XYS:
+		return "XYS"
+	case XYZ:
+		return "XYZ"
+	case XYZS:
+		return "XYZS"
+	case XYM:
+		return "XYM"
+	case XYMS:
+		return "XYMS"
+	case XYZM:
+		return "XYZM"
+	case XYZMS:
+		return "XYZMS"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+// ----------------------------------------------------------------------------
+// GeomType
+// ----------------------------------------------------------------------------
+
+// GeomType is the bitmask of the geom
+type GeomType uint16
+
+func (g GeomType) String() string {
+	switch g {
+	case GEOMETRY:
+		return "GEOMETRY"
+	case POINT:
+		return "POINT"
+	case LINESTRING:
+		return "LINESTRING"
+	case POLYGON:
+		return "POLYGON"
+	case MULTIPOINT:
+		return "MULTIPOINT"
+	case MULTILINESTRING:
+		return "MULTILINESTRING"
+	case MULTIPOLYGON:
+		return "MULTIPOLYGON"
+	case GEOMETRYCOLLECTION:
+		return "GEOMETRYCOLLECTION"
+	case CIRCULARSTRING:
+		return "CIRCULARSTRING"
+	case COMPOUNDCURVE:
+		return "COMPOUNDCURVE"
+	case CURVEPOLYGON:
+		return "CURVEPOLYGON"
+	case MULTICURVE:
+		return "MULTICURVE"
+	case MULTISURFACE:
+		return "MULTISURFACE"
+	case CURVE:
+		return "CURVE"
+	case SURFACE:
+		return "SURFACE"
+	case POLYHEDRALSURFACE:
+		return "POLYHEDRALSURFACE "
+	case TIN:
+		return "TIN"
+	case TRIANGLE:
+		return "TRIANGLE"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+// ----------------------------------------------------------------------------
 // Geometry
 // ----------------------------------------------------------------------------
 
