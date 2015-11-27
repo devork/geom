@@ -30,13 +30,19 @@ func Encode(g Geometry, w io.Writer) error {
 
 	e := &encoder{w, binary.BigEndian}
 
+	err := writeHeader(g, e)
+
+	if err != nil {
+		return err
+	}
+
 	switch g.Type() {
 	case POINT:
 		return marshalPoint(g.(*Point), e)
-	// case LINESTRING:
-	// 	return marshalLineString
-	// case POLYGON:
-	// 	return marshalPolygon
+	case LINESTRING:
+		return marshalLineString(g.(*LineString), e)
+	case POLYGON:
+		return marshalPolygon(g.(*Polygon), e)
 	// case MULTIPOINT:
 	// 	return marshalMultiPoint
 	// case MULTILINESTRING:
@@ -52,13 +58,61 @@ func Encode(g Geometry, w io.Writer) error {
 }
 
 func marshalPoint(p *Point, e *encoder) error {
-	err := writeHeader(p, e)
+	return marshalCoord(&(*p).Coordinate, e)
+}
+
+func marshalLineString(l *LineString, e *encoder) error {
+	err := e.write(uint32(len(l.Coordinates)))
 
 	if err != nil {
 		return err
 	}
 
-	return marshalCoord(&(*p).Coordinate, e)
+	for _, coord := range l.Coordinates {
+		err = marshalCoord(&coord, e)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func marshalPolygon(p *Polygon, e *encoder) error {
+	err := e.write(uint32(len(p.Rings)))
+
+	if err != nil {
+		return err
+	}
+
+	for _, ring := range p.Rings {
+		err = marshalLinearRing(&ring, e)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func marshalLinearRing(l *LinearRing, e *encoder) error {
+	err := e.write(uint32(len(l.Coordinates)))
+
+	if err != nil {
+		return err
+	}
+
+	for _, coord := range l.Coordinates {
+		err = marshalCoord(&coord, e)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func marshalCoord(c *Coordinate, e *encoder) error {
