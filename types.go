@@ -76,26 +76,26 @@ func (g GeomType) String() string {
 		return "MULTIPOLYGON"
 	case GEOMETRYCOLLECTION:
 		return "GEOMETRYCOLLECTION"
-	case CIRCULARSTRING:
-		return "CIRCULARSTRING"
-	case COMPOUNDCURVE:
-		return "COMPOUNDCURVE"
-	case CURVEPOLYGON:
-		return "CURVEPOLYGON"
-	case MULTICURVE:
-		return "MULTICURVE"
-	case MULTISURFACE:
-		return "MULTISURFACE"
-	case CURVE:
-		return "CURVE"
-	case SURFACE:
-		return "SURFACE"
-	case POLYHEDRALSURFACE:
-		return "POLYHEDRALSURFACE "
-	case TIN:
-		return "TIN"
-	case TRIANGLE:
-		return "TRIANGLE"
+	// case CIRCULARSTRING:
+	// 	return "CIRCULARSTRING"
+	// case COMPOUNDCURVE:
+	// 	return "COMPOUNDCURVE"
+	// case CURVEPOLYGON:
+	// 	return "CURVEPOLYGON"
+	// case MULTICURVE:
+	// 	return "MULTICURVE"
+	// case MULTISURFACE:
+	// 	return "MULTISURFACE"
+	// case CURVE:
+	// 	return "CURVE"
+	// case SURFACE:
+	// 	return "SURFACE"
+	// case POLYHEDRALSURFACE:
+	// 	return "POLYHEDRALSURFACE "
+	// case TIN:
+	// 	return "TIN"
+	// case TRIANGLE:
+	// 	return "TRIANGLE"
 	default:
 		return "UNKNOWN"
 	}
