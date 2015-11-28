@@ -136,7 +136,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMultiGeometry(t *testing.T) {
+func TestGeometryCollection(t *testing.T) {
 	datasets := []struct {
 		data  string
 		srid  uint32

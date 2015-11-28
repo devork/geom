@@ -6,9 +6,6 @@ import (
 	"io"
 )
 
-// handler type to convert a stream of bytes to a geometry type
-type unmarshaller func(d *decoder, h *Hdr) (Geometry, error)
-
 // wraps the byte order and reader into a single struct for easier mainpulation
 type decoder struct {
 	o binary.ByteOrder
@@ -71,12 +68,6 @@ func Decode(r io.Reader) (Geometry, error) {
 
 	if err != nil {
 		return nil, err
-	}
-
-	unmarshal := resolve(hdr.gtype)
-
-	if unmarshal == nil {
-		return nil, fmt.Errorf("Unknown geometry type: %X", hdr.gtype)
 	}
 
 	return unmarshal(decoder, hdr)
@@ -286,19 +277,12 @@ func unmarshalGeometryCollection(d *decoder, hdr *Hdr) (Geometry, error) {
 
 	geoms := make([]Geometry, numGeoms, numGeoms)
 	var geom Geometry
-	var unmarshal unmarshaller
 	for idx = 0; idx < numGeoms; idx++ {
 		d.u8()
 		ghdr, err := unmarshalHdr(d)
 
 		if err != nil {
 			return nil, err
-		}
-
-		unmarshal = resolve(ghdr.gtype)
-
-		if unmarshal == nil {
-			return nil, fmt.Errorf("Unknown geometry type: %X", ghdr.gtype)
 		}
 
 		geom, err = unmarshal(d, ghdr)
@@ -359,23 +343,23 @@ func unmarshalCoord(d *decoder, dim Dimension) (*Coordinate, error) {
 }
 
 // Resolves a geometry type to its unmarshaller instance
-func resolve(gtype GeomType) unmarshaller {
-	switch gtype {
+func unmarshal(d *decoder, hdr *Hdr) (Geometry, error) {
+	switch hdr.gtype {
 	case POINT:
-		return unmarshalPoint
+		return unmarshalPoint(d, hdr)
 	case LINESTRING:
-		return unmarshalLineString
+		return unmarshalLineString(d, hdr)
 	case POLYGON:
-		return unmarshalPolygon
+		return unmarshalPolygon(d, hdr)
 	case MULTIPOINT:
-		return unmarshalMultiPoint
+		return unmarshalMultiPoint(d, hdr)
 	case MULTILINESTRING:
-		return unmarshalMultiLineString
+		return unmarshalMultiLineString(d, hdr)
 	case MULTIPOLYGON:
-		return unmarshalMultiPolygon
+		return unmarshalMultiPolygon(d, hdr)
 	case GEOMETRYCOLLECTION:
-		return unmarshalGeometryCollection
+		return unmarshalGeometryCollection(d, hdr)
 	default:
-		return nil
+		return nil, ErrUnsupportedGeom
 	}
 }

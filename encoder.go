@@ -36,29 +36,7 @@ func Encode(g Geometry, w io.Writer) error {
 		return err
 	}
 
-	switch g := g.(type) {
-	case *Point:
-		return marshalPoint(g, e)
-	case *LineString:
-		return marshalLineString(g, e)
-	case *Polygon:
-		return marshalPolygon(g, e)
-	case *MultiPoint:
-		return marshalMultiPoint(g, e)
-	case *MultiLineString:
-		return marshalMultiLineString(g, e)
-	case *MultiPolygon:
-		return marshalMultiPolygon(g, e)
-	default:
-		return ErrUnsupportedGeom
-	}
-
-	// case MULTILINESTRING:
-	// 	return marshalMultiLineString
-	// case MULTIPOLYGON:
-	// 	return marshalMultiPolygon
-	// case GEOMETRYCOLLECTION:
-	// 	return marshalGeometryCollection
+	return marshal(g, e)
 }
 
 func marshalPoint(p *Point, e *encoder) error {
@@ -173,6 +151,31 @@ func marshalMultiPolygon(mp *MultiPolygon, e *encoder) error {
 	return nil
 }
 
+func marshalGeometryCollection(gc *GeometryCollection, e *encoder) error {
+	err := e.write(uint32(len(gc.Geometries)))
+
+	if err != nil {
+		return err
+	}
+
+	for _, g := range gc.Geometries {
+		err = marshalHdr(g, e)
+
+		if err != nil {
+			return err
+		}
+
+		err = marshal(g, e)
+
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 func marshalLinearRing(l *LinearRing, e *encoder) error {
 	err := e.write(uint32(len(l.Coordinates)))
 
@@ -240,4 +243,25 @@ func marshalHdr(g Geometry, e *encoder) error {
 	}
 
 	return nil
+}
+
+func marshal(g Geometry, e *encoder) error {
+	switch g := g.(type) {
+	case *Point:
+		return marshalPoint(g, e)
+	case *LineString:
+		return marshalLineString(g, e)
+	case *Polygon:
+		return marshalPolygon(g, e)
+	case *MultiPoint:
+		return marshalMultiPoint(g, e)
+	case *MultiLineString:
+		return marshalMultiLineString(g, e)
+	case *MultiPolygon:
+		return marshalMultiPolygon(g, e)
+	case *GeometryCollection:
+		return marshalGeometryCollection(g, e)
+	default:
+		return ErrUnsupportedGeom
+	}
 }
