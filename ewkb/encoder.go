@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+
+	"github.com/devork/geom"
 )
 
 type encoder struct {
@@ -18,11 +20,12 @@ func (d *encoder) write(data interface{}) error {
 // Common error types
 var (
 	ErrNoGeometry      = errors.New("no geometry specified")
-	ErrUnsupportedGeom = errors.New("cannot encode unknown geometry ")
+	ErrUnsupportedGeom = errors.New("cannot encode unknown geometry")
+	ErrUnknownDim      = errors.New("unknown dimension")
 )
 
 //Encode will take the given geometry and write to the specified writer
-func Encode(g Geometry, w io.Writer) error {
+func Encode(g geom.Geometry, w io.Writer) error {
 
 	if g == nil {
 		return ErrNoGeometry
@@ -39,11 +42,11 @@ func Encode(g Geometry, w io.Writer) error {
 	return marshal(g, e)
 }
 
-func marshalPoint(p *Point, e *encoder) error {
+func marshalPoint(p *geom.Point, e *encoder) error {
 	return marshalCoord(&(*p).Coordinate, e)
 }
 
-func marshalMultiPoint(mp *MultiPoint, e *encoder) error {
+func marshalMultiPoint(mp *geom.MultiPoint, e *encoder) error {
 	err := e.write(uint32(len(mp.Points)))
 
 	if err != nil {
@@ -67,7 +70,7 @@ func marshalMultiPoint(mp *MultiPoint, e *encoder) error {
 	return nil
 }
 
-func marshalLineString(l *LineString, e *encoder) error {
+func marshalLineString(l *geom.LineString, e *encoder) error {
 	err := e.write(uint32(len(l.Coordinates)))
 
 	if err != nil {
@@ -85,7 +88,7 @@ func marshalLineString(l *LineString, e *encoder) error {
 	return nil
 }
 
-func marshalMultiLineString(ml *MultiLineString, e *encoder) error {
+func marshalMultiLineString(ml *geom.MultiLineString, e *encoder) error {
 	err := e.write(uint32(len(ml.LineStrings)))
 	if err != nil {
 		return err
@@ -108,7 +111,7 @@ func marshalMultiLineString(ml *MultiLineString, e *encoder) error {
 	return nil
 }
 
-func marshalPolygon(p *Polygon, e *encoder) error {
+func marshalPolygon(p *geom.Polygon, e *encoder) error {
 	err := e.write(uint32(len(p.Rings)))
 
 	if err != nil {
@@ -126,7 +129,7 @@ func marshalPolygon(p *Polygon, e *encoder) error {
 	return nil
 }
 
-func marshalMultiPolygon(mp *MultiPolygon, e *encoder) error {
+func marshalMultiPolygon(mp *geom.MultiPolygon, e *encoder) error {
 	err := e.write(uint32(len(mp.Polygons)))
 
 	if err != nil {
@@ -151,7 +154,7 @@ func marshalMultiPolygon(mp *MultiPolygon, e *encoder) error {
 	return nil
 }
 
-func marshalGeometryCollection(gc *GeometryCollection, e *encoder) error {
+func marshalGeometryCollection(gc *geom.GeometryCollection, e *encoder) error {
 	err := e.write(uint32(len(gc.Geometries)))
 
 	if err != nil {
@@ -176,7 +179,7 @@ func marshalGeometryCollection(gc *GeometryCollection, e *encoder) error {
 	return nil
 }
 
-func marshalLinearRing(l *LinearRing, e *encoder) error {
+func marshalLinearRing(l *geom.LinearRing, e *encoder) error {
 	err := e.write(uint32(len(l.Coordinates)))
 
 	if err != nil {
@@ -194,7 +197,7 @@ func marshalLinearRing(l *LinearRing, e *encoder) error {
 	return nil
 }
 
-func marshalCoord(c *Coordinate, e *encoder) error {
+func marshalCoord(c *geom.Coordinate, e *encoder) error {
 	var err error
 	for idx := 0; idx < len(*c); idx++ {
 		err = e.write((*c)[idx])
@@ -207,29 +210,69 @@ func marshalCoord(c *Coordinate, e *encoder) error {
 	return nil
 }
 
-func marshalHdr(g Geometry, e *encoder) error {
+func marshalHdr(g geom.Geometry, e *encoder) error {
 	err := e.write(bigEndian)
 
 	if err != nil {
 		return err
 	}
 
-	var gtype uint32
-	var writeSrid = false
-	switch g.Dimension() {
-	case XYS, XYZS, XYMS, XYZMS:
-		gtype = uint32(g.Dimension())
-		gtype <<= 16
-		gtype |= uint32(g.Type())
-		writeSrid = true
-	case XYZM:
-		gtype = uint32(wkbzm) + uint32(g.Type())
-	case XYM:
-		gtype = uint32(wkbm) + uint32(g.Type())
-	case XYZ:
-		gtype = uint32(wkbz) + uint32(g.Type())
+	var field uint32
+	var gtype geomtype
+	var writeSrid bool
+
+	switch g.(type) {
+	case *geom.Point:
+		gtype = point
+	case *geom.LineString:
+		gtype = linestring
+	case *geom.Polygon:
+		gtype = polygon
+	case *geom.MultiPoint:
+		gtype = multipoint
+	case *geom.MultiLineString:
+		gtype = multilinestring
+	case *geom.MultiPolygon:
+		gtype = multipolygon
+	case *geom.GeometryCollection:
+		gtype = geometrycollection
 	default:
-		gtype = uint32(g.Type())
+		return ErrUnsupportedGeom
+	}
+
+	if g.SRID() != 0 {
+
+		writeSrid = true
+
+		switch g.Dimension() {
+		case geom.XY:
+			field = uint32(xys)
+		case geom.XYZ:
+			field = uint32(xyzs)
+		case geom.XYM:
+			field = uint32(xyms)
+		case geom.XYZM:
+			field = uint32(xyzms)
+		default:
+			return ErrUnknownDim
+		}
+
+		field <<= 16
+		field |= uint32(gtype)
+
+	} else {
+		switch g.Dimension() {
+		case geom.XYZM:
+			field = uint32(wkbzm) + uint32(gtype)
+		case geom.XYM:
+			field = uint32(wkbm) + uint32(gtype)
+		case geom.XYZ:
+			field = uint32(wkbz) + uint32(gtype)
+		case geom.XY:
+			field = uint32(gtype)
+		default:
+			return ErrUnknownDim
+		}
 	}
 
 	err = e.write(gtype)
@@ -239,27 +282,27 @@ func marshalHdr(g Geometry, e *encoder) error {
 	}
 
 	if writeSrid {
-		return e.write(g.Srid())
+		return e.write(g.SRID())
 	}
 
 	return nil
 }
 
-func marshal(g Geometry, e *encoder) error {
+func marshal(g geom.Geometry, e *encoder) error {
 	switch g := g.(type) {
-	case *Point:
+	case *geom.Point:
 		return marshalPoint(g, e)
-	case *LineString:
+	case *geom.LineString:
 		return marshalLineString(g, e)
-	case *Polygon:
+	case *geom.Polygon:
 		return marshalPolygon(g, e)
-	case *MultiPoint:
+	case *geom.MultiPoint:
 		return marshalMultiPoint(g, e)
-	case *MultiLineString:
+	case *geom.MultiLineString:
 		return marshalMultiLineString(g, e)
-	case *MultiPolygon:
+	case *geom.MultiPolygon:
 		return marshalMultiPolygon(g, e)
-	case *GeometryCollection:
+	case *geom.GeometryCollection:
 		return marshalGeometryCollection(g, e)
 	default:
 		return ErrUnsupportedGeom

@@ -6,22 +6,23 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/devork/geom"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEncodePoint(t *testing.T) {
 	datasets := []struct {
-		data     Geometry
+		data     geom.Geometry
 		expected string
 	}{
-		{&Point{Hdr{XYZMS, 27700, POINT}, Coordinate{1, 1, 1, 1}}, "00e000000100006c343ff00000000000003ff00000000000003ff00000000000003ff0000000000000"},
-		{&Point{Hdr{XYZM, 0, POINT}, Coordinate{1, 1, 1, 1}}, "0000000bb93ff00000000000003ff00000000000003ff00000000000003ff0000000000000"},
-		{&Point{Hdr{XYZS, 27700, POINT}, Coordinate{1, 1, 1}}, "00a000000100006c343ff00000000000003ff00000000000003ff0000000000000"},
-		{&Point{Hdr{XYZ, 0, POINT}, Coordinate{1, 1, 1}}, "00000003e93ff00000000000003ff00000000000003ff0000000000000"},
-		{&Point{Hdr{XYMS, 27700, POINT}, Coordinate{1, 1, 1}}, "006000000100006c343ff00000000000003ff00000000000003ff0000000000000"},
-		{&Point{Hdr{XYM, 0, POINT}, Coordinate{1, 1, 1}}, "00000007d13ff00000000000003ff00000000000003ff0000000000000"},
-		{&Point{Hdr{XYS, 27700, POINT}, Coordinate{1, 1}}, "002000000100006c343ff00000000000003ff0000000000000"},
-		{&Point{Hdr{XY, 0, POINT}, Coordinate{1, 1}}, "00000000013ff00000000000003ff0000000000000"},
+		{&geom.Point{geom.Hdr{geom.XYZM, 27700}, geom.Coordinate{1, 1, 1, 1}}, "00e000000100006c343ff00000000000003ff00000000000003ff00000000000003ff0000000000000"},
+		{&geom.Point{geom.Hdr{geom.XYZM, 0}, geom.Coordinate{1, 1, 1, 1}}, "0000000bb93ff00000000000003ff00000000000003ff00000000000003ff0000000000000"},
+		{&geom.Point{geom.Hdr{geom.XYZ, 27700}, geom.Coordinate{1, 1, 1}}, "00a000000100006c343ff00000000000003ff00000000000003ff0000000000000"},
+		{&geom.Point{geom.Hdr{geom.XYZ, 0}, geom.Coordinate{1, 1, 1}}, "00000003e93ff00000000000003ff00000000000003ff0000000000000"},
+		{&geom.Point{geom.Hdr{geom.XYM, 27700}, geom.Coordinate{1, 1, 1}}, "006000000100006c343ff00000000000003ff00000000000003ff0000000000000"},
+		{&geom.Point{geom.Hdr{geom.XYM, 0}, geom.Coordinate{1, 1, 1}}, "00000007d13ff00000000000003ff00000000000003ff0000000000000"},
+		{&geom.Point{geom.Hdr{geom.XY, 27700}, geom.Coordinate{1, 1}}, "002000000100006c343ff00000000000003ff0000000000000"},
+		{&geom.Point{geom.Hdr{geom.XY, 0}, geom.Coordinate{1, 1}}, "00000000013ff00000000000003ff0000000000000"},
 	}
 
 	for _, dataset := range datasets {
@@ -41,10 +42,10 @@ func TestEncodePoint(t *testing.T) {
 
 func TestEncodeLineString(t *testing.T) {
 	datasets := []struct {
-		data     Geometry
+		data     geom.Geometry
 		expected string
 	}{
-		{&LineString{Hdr{XYS, 27700, LINESTRING}, []Coordinate{{30, 10}, {10, 30}, {40, 40}}}, "002000000200006c3400000003403e00000000000040240000000000004024000000000000403e00000000000040440000000000004044000000000000"},
+		{&geom.LineString{geom.Hdr{geom.XY, 27700}, []geom.Coordinate{{30, 10}, {10, 30}, {40, 40}}}, "002000000200006c3400000003403e00000000000040240000000000004024000000000000403e00000000000040440000000000004044000000000000"},
 	}
 
 	for _, dataset := range datasets {
@@ -64,14 +65,14 @@ func TestEncodeLineString(t *testing.T) {
 
 func TestEncodePolygon(t *testing.T) {
 	datasets := []struct {
-		data     Geometry
+		data     geom.Geometry
 		expected string
 	}{
 		{
-			&Polygon{
-				Hdr{XYS, 27700, POLYGON},
-				[]LinearRing{{
-					[]Coordinate{
+			&geom.Polygon{
+				geom.Hdr{geom.XY, 27700},
+				[]geom.LinearRing{{
+					[]geom.Coordinate{
 						{30, 10},
 						{40, 40},
 						{20, 40},
@@ -101,15 +102,15 @@ func TestEncodePolygon(t *testing.T) {
 
 func TestEncodeMultiPoint(t *testing.T) {
 	datasets := []struct {
-		data     Geometry
+		data     geom.Geometry
 		expected string
 	}{
 		{
-			&MultiPoint{Hdr{XYS, 27700, MULTIPOINT}, []Point{
-				Point{Hdr{XY, 0, POINT}, Coordinate{10, 40}},
-				Point{Hdr{XY, 0, POINT}, Coordinate{40, 30}},
-				Point{Hdr{XY, 0, POINT}, Coordinate{20, 20}},
-				Point{Hdr{XY, 0, POINT}, Coordinate{30, 10}},
+			&geom.MultiPoint{geom.Hdr{geom.XY, 27700}, []geom.Point{
+				geom.Point{geom.Hdr{geom.XY, 0}, geom.Coordinate{10, 40}},
+				geom.Point{geom.Hdr{geom.XY, 0}, geom.Coordinate{40, 30}},
+				geom.Point{geom.Hdr{geom.XY, 0}, geom.Coordinate{20, 20}},
+				geom.Point{geom.Hdr{geom.XY, 0}, geom.Coordinate{30, 10}},
 			}},
 			"002000000400006c340000000400000000014024000000000000404400000000000000000000014044000000000000403e0000000000000000000001403400000000000040340000000000000000000001403e0000000000004024000000000000",
 		},
@@ -133,13 +134,13 @@ func TestEncodeMultiPoint(t *testing.T) {
 func TestEncodeMultiLineString(t *testing.T) {
 
 	datasets := []struct {
-		data     Geometry
+		data     geom.Geometry
 		expected string
 	}{
 		{
-			&MultiLineString{Hdr{XYS, 27700, MULTILINESTRING}, []LineString{
-				LineString{Hdr{XY, 0, LINESTRING}, []Coordinate{{10, 10}, {20, 20}, {10, 40}}},
-				LineString{Hdr{XY, 0, LINESTRING}, []Coordinate{{40, 40}, {30, 30}, {40, 20}, {30, 10}}},
+			&geom.MultiLineString{geom.Hdr{geom.XY, 27700}, []geom.LineString{
+				geom.LineString{geom.Hdr{geom.XY, 0}, []geom.Coordinate{{10, 10}, {20, 20}, {10, 40}}},
+				geom.LineString{geom.Hdr{geom.XY, 0}, []geom.Coordinate{{40, 40}, {30, 30}, {40, 20}, {30, 10}}},
 			}},
 			"002000000500006c340000000200000000020000000340240000000000004024000000000000403400000000000040340000000000004024000000000000404400000000000000000000020000000440440000000000004044000000000000403e000000000000403e00000000000040440000000000004034000000000000403e0000000000004024000000000000",
 		},
@@ -162,15 +163,15 @@ func TestEncodeMultiLineString(t *testing.T) {
 func TestEncodeMultiPolygon(t *testing.T) {
 
 	datasets := []struct {
-		data     Geometry
+		data     geom.Geometry
 		expected string
 	}{
 		{
-			&MultiPolygon{Hdr{XYS, 27700, MULTIPOLYGON}, []Polygon{
-				Polygon{
-					Hdr{XY, 0, POLYGON},
-					[]LinearRing{{
-						[]Coordinate{
+			&geom.MultiPolygon{geom.Hdr{geom.XY, 27700}, []geom.Polygon{
+				geom.Polygon{
+					geom.Hdr{geom.XY, 0},
+					[]geom.LinearRing{{
+						[]geom.Coordinate{
 							{40, 40},
 							{20, 45},
 							{45, 30},
@@ -178,16 +179,16 @@ func TestEncodeMultiPolygon(t *testing.T) {
 						},
 					}},
 				},
-				Polygon{
-					Hdr{XY, 0, POLYGON},
-					[]LinearRing{
+				geom.Polygon{
+					geom.Hdr{geom.XY, 0},
+					[]geom.LinearRing{
 						{
-							[]Coordinate{
+							[]geom.Coordinate{
 								{20, 35}, {10, 30}, {10, 10}, {30, 5}, {45, 20}, {20, 35},
 							},
 						},
 						{
-							[]Coordinate{
+							[]geom.Coordinate{
 								{30, 20}, {20, 15}, {20, 25}, {30, 20},
 							},
 						},
@@ -215,18 +216,18 @@ func TestEncodeMultiPolygon(t *testing.T) {
 func TestEncodeGeometryCollection(t *testing.T) {
 
 	datasets := []struct {
-		data     Geometry
+		data     geom.Geometry
 		expected string
 	}{
 		{
-			&GeometryCollection{Hdr{XYS, 27700, GEOMETRYCOLLECTION}, []Geometry{
-				&Point{
-					Hdr{XY, 0, POINT},
-					Coordinate{4, 6},
+			&geom.GeometryCollection{geom.Hdr{geom.XY, 27700}, []geom.Geometry{
+				&geom.Point{
+					geom.Hdr{geom.XY, 0},
+					geom.Coordinate{4, 6},
 				},
-				&LineString{
-					Hdr{XY, 0, LINESTRING},
-					[]Coordinate{{4, 6}, {7, 10}},
+				&geom.LineString{
+					geom.Hdr{geom.XY, 0},
+					[]geom.Coordinate{{4, 6}, {7, 10}},
 				},
 			}},
 			"002000000700006c340000000200000000014010000000000000401800000000000000000000020000000240100000000000004018000000000000401c0000000000004024000000000000",
