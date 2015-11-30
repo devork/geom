@@ -257,12 +257,8 @@ func marshalHdr(g geom.Geometry, e *encoder) error {
 			return ErrUnknownDim
 		}
 
-		//fmt.Printf("field = %X\n", field)
 		field <<= 16
-		//fmt.Printf("field = %X\n", field)
 		field |= uint32(gtype)
-		//fmt.Printf("field = %X\n", field)
-
 	} else {
 		switch g.Dimension() {
 		case geom.XYZM:
