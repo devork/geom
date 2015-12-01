@@ -2,7 +2,6 @@ package ewkb
 
 import (
 	"encoding/binary"
-	"errors"
 	"io"
 
 	"github.com/devork/geom"
@@ -17,18 +16,11 @@ func (d *encoder) write(data interface{}) error {
 	return binary.Write(d.w, d.o, data)
 }
 
-// Common error types
-var (
-	ErrNoGeometry      = errors.New("no geometry specified")
-	ErrUnsupportedGeom = errors.New("cannot encode unknown geometry")
-	ErrUnknownDim      = errors.New("unknown dimension")
-)
-
 //Encode will take the given geometry and write to the specified writer
 func Encode(g geom.Geometry, w io.Writer) error {
 
 	if g == nil {
-		return ErrNoGeometry
+		return geom.ErrNoGeometry
 	}
 
 	e := &encoder{w, binary.BigEndian}
@@ -237,7 +229,7 @@ func marshalHdr(g geom.Geometry, e *encoder) error {
 	case *geom.GeometryCollection:
 		gtype = geometrycollection
 	default:
-		return ErrUnsupportedGeom
+		return geom.ErrUnsupportedGeom
 	}
 
 	if g.SRID() != 0 {
@@ -254,7 +246,7 @@ func marshalHdr(g geom.Geometry, e *encoder) error {
 		case geom.XYZM:
 			field = uint32(xyzms)
 		default:
-			return ErrUnknownDim
+			return geom.ErrUnknownDim
 		}
 
 		field <<= 16
@@ -270,7 +262,7 @@ func marshalHdr(g geom.Geometry, e *encoder) error {
 		case geom.XY:
 			field = uint32(gtype)
 		default:
-			return ErrUnknownDim
+			return geom.ErrUnknownDim
 		}
 	}
 
@@ -304,6 +296,6 @@ func marshal(g geom.Geometry, e *encoder) error {
 	case *geom.GeometryCollection:
 		return marshalGeometryCollection(g, e)
 	default:
-		return ErrUnsupportedGeom
+		return geom.ErrUnsupportedGeom
 	}
 }

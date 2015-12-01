@@ -370,6 +370,6 @@ func unmarshal(d *decoder) (geom.Geometry, error) {
 	case geometrycollection:
 		return unmarshalGeometryCollection(d)
 	default:
-		return nil, ErrUnsupportedGeom
+		return nil, geom.ErrUnsupportedGeom
 	}
 }

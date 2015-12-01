@@ -462,15 +462,3 @@ type LinearRing struct {
 
 // Coordinate type
 type Coordinate []float64
-
-// func (c Coordinate) appendGeoJSON(sb *bytes.Buffer) {
-// 	limit := len(c) - 1
-// 	sb.WriteString("[")
-// 	for idx, comp := range c {
-// 		sb.WriteString(strconv.FormatFloat(comp, 'f', -1, 64))
-// 		if idx < limit {
-// 			sb.WriteString(",")
-// 		}
-// 	}
-// 	sb.WriteString("]")
-// }

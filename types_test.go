@@ -16,40 +16,6 @@ limitations under the License.
 
 package geom
 
-// func TestPoint_GeoJSON(t *testing.T) {
-// 	expected := &Point{
-// 		Hdr{
-// 			dim:   XYZ,
-// 			srid:  27700,
-// 			gtype: POINT,
-// 		},
-// 		[]float64{100.0, 0.0},
-// 	}
-//
-// 	geojson := expected.GeoJSON(true, true)
-//
-// 	got := make(map[string]interface{})
-// 	err := json.Unmarshal([]byte(geojson), &got)
-//
-// 	if err != nil {
-// 		t.Fatalf("Failed to parse generated GeoJSON: error %s", err)
-// 	}
-//
-// 	//t.Logf("%#v\n", got)
-//
-// 	assert.Equal(t, "Point", got["type"])
-// 	assert.Equal(t, "XYZ", got["dim"])
-//
-// 	coords := got["coordinates"].([]interface{})
-// 	assert.InDelta(t, 100, coords[0].(float64), 1e-9)
-// 	assert.InDelta(t, 0, coords[1].(float64), 1e-9)
-//
-// 	crs := got["crs"].(map[string]interface{})
-// 	assert.Equal(t, "name", crs["type"])
-//
-// 	props := crs["properties"].(map[string]interface{})
-// 	assert.Equal(t, "EPSG:27700", props["name"])
-// }
 //
 // func TestLineString_GeoJSON(t *testing.T) {
 // 	expected := &LineString{
