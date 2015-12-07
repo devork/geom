@@ -10,24 +10,46 @@ import (
 
 // snippets of geojson
 var (
-	pointHdr = []byte(`{"type":"Point","coordinates":`)
-	dquote   = []byte(`"`)
-	comma    = []byte(`,`)
-	lbrace   = []byte(`{`)
-	rbrace   = []byte(`}`)
-	lparen   = []byte(`[`)
-	rparen   = []byte(`]`)
+	pointHdr      = []byte(`{"type":"Point","coordinates":`)
+	linestringHdr = []byte(`{"type":"LineString", "coordinates":`)
+	dquote        = []byte(`"`)
+	comma         = []byte(`,`)
+	lbrace        = []byte(`{`)
+	rbrace        = []byte(`}`)
+	lparen        = []byte(`[`)
+	rparen        = []byte(`]`)
 )
 
 func Encode(g geom.Geometry, w io.Writer) error {
 	switch g := g.(type) {
 	case *geom.Point:
 		return marshalPoint(g, w)
+	case *geom.LineString:
+		return marshalLineString(g, w)
 	default:
 		return geom.ErrUnsupportedGeom
 
 	}
+}
 
+func marshalLineString(ls *geom.LineString, w io.Writer) error {
+	var sb bytes.Buffer
+	sb.Write(linestringHdr)
+	sb.Write(lparen)
+	limit := len(ls.Coordinates) - 1
+	for idx, coord := range ls.Coordinates {
+		marshalCoord(&coord, &sb)
+
+		if idx < limit {
+			sb.Write(comma)
+		}
+	}
+	sb.Write(rparen)
+	sb.Write(rbrace)
+
+	_, err := w.Write(sb.Bytes())
+
+	return err
 }
 
 func marshalPoint(g *geom.Point, w io.Writer) error {
