@@ -88,47 +88,6 @@ type MultiPoint struct {
 	Points []Point
 }
 
-// func (p *MultiPoint) GeoJSON(crs, bbox bool) string {
-// 	var sb bytes.Buffer
-// 	sb.WriteString(`{"type":"MultiPoint","coordinates":[`)
-//
-// 	limit := len(p.Points) - 1
-// 	for idx, point := range p.Points {
-// 		point.Coordinate.appendGeoJSON(&sb)
-//
-// 		if idx < limit {
-// 			sb.WriteString(",")
-// 		}
-// 	}
-//
-// 	sb.WriteString(`],`)
-// 	sb.WriteString(`"dim":"`)
-// 	sb.WriteString(p.Hdr.dim.String())
-// 	sb.WriteString(`"`)
-// 	if crs {
-// 		sb.WriteString(`,"crs":{"type":"name","properties":{"name":"EPSG:`)
-// 		sb.WriteString(strconv.FormatUint(uint64(p.srid), 10))
-// 		sb.WriteString(`"}}`)
-// 	}
-// 	sb.WriteString(`}`)
-//
-// 	return sb.String()
-// }
-
-// func (p *MultiPoint) EWKT() string {
-// 	var sb bytes.Buffer
-//
-// 	sb.WriteString("SRID=")
-// 	sb.WriteString(strconv.FormatUint(uint64(p.srid), 10))
-// 	sb.WriteString(";MULTIPOINT()")
-//
-// 	return sb.String()
-// }
-//
-// func (p *MultiPoint) String() string {
-// 	return p.EWKT()
-// }
-
 // ----------------------------------------------------------------------------
 // LineString
 // ----------------------------------------------------------------------------

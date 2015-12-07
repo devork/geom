@@ -17,38 +17,6 @@ limitations under the License.
 package geom
 
 //
-// func TestMultiPoint_GeoJSON(t *testing.T) {
-// 	expected := &MultiPoint{
-// 		Hdr{
-// 			dim:   XYZ,
-// 			srid:  27700,
-// 			gtype: MULTIPOINT,
-// 		},
-// 		[]Point{
-// 			Point{
-// 				Hdr{
-// 					dim:   XYZ,
-// 					srid:  27700,
-// 					gtype: POINT,
-// 				},
-// 				[]float64{100.0, 0.0},
-// 			},
-// 			Point{
-// 				Hdr{
-// 					dim:   XYZ,
-// 					srid:  27700,
-// 					gtype: POINT,
-// 				},
-// 				[]float64{101.0, 1.0},
-// 			},
-// 		},
-// 	}
-//
-// 	geojson := expected.GeoJSON(true, true)
-//
-// 	t.Logf("%s\n", geojson)
-// }
-//
 // func TestMultiLineString_GeoJSON(t *testing.T) {
 // 	expected := &MultiLineString{
 // 		Hdr{

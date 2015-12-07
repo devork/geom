@@ -29,6 +29,7 @@ var (
 	pointHdr      = []byte(`{"type":"Point","coordinates":`)
 	linestringHdr = []byte(`{"type":"LineString", "coordinates":`)
 	polygonHdr    = []byte(`{"type":"Polygon", "coordinates":`)
+	multiPointHdr = []byte(`{"type":"MultiPoint","coordinates":`)
 	dquote        = []byte(`"`)
 	comma         = []byte(`,`)
 	lbrace        = []byte(`{`)
@@ -41,6 +42,8 @@ func Encode(g geom.Geometry, w io.Writer) error {
 	switch g := g.(type) {
 	case *geom.Point:
 		return marshalPoint(g, w)
+	case *geom.MultiPoint:
+		return marshalMultiPoint(g, w)
 	case *geom.LineString:
 		return marshalLineString(g, w)
 	case *geom.Polygon:
@@ -98,6 +101,29 @@ func marshalPoint(g *geom.Point, w io.Writer) error {
 	sb.Write(pointHdr)
 	marshalCoord(&g.Coordinate, &sb)
 	sb.Write(rbrace)
+
+	_, err := w.Write(sb.Bytes())
+
+	return err
+}
+
+func marshalMultiPoint(mp *geom.MultiPoint, w io.Writer) error {
+	var sb bytes.Buffer
+	sb.Write(multiPointHdr)
+	sb.Write(lparen)
+
+	limit := len(mp.Points) - 1
+	for idx, point := range mp.Points {
+		marshalCoord(&point.Coordinate, &sb)
+
+		if idx < limit {
+			sb.Write(comma)
+		}
+	}
+
+	sb.Write(rparen)
+	sb.Write(rbrace)
+
 	_, err := w.Write(sb.Bytes())
 
 	return err

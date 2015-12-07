@@ -58,6 +58,66 @@ func TestEncodePoint(t *testing.T) {
 	assert.InDelta(t, -12.34567890, coords[2].(float64), 1e-9)
 }
 
+func TestEncodeMultiPoint(t *testing.T) {
+	expected := &geom.MultiPoint{
+		geom.Hdr{
+			Dim:  geom.XY,
+			Srid: 4326,
+		},
+		[]geom.Point{
+			{
+				geom.Hdr{
+					Dim:  geom.XY,
+					Srid: 4326,
+				},
+				[]float64{-105.01621, 39.57422},
+			},
+			{
+				geom.Hdr{
+					Dim:  geom.XY,
+					Srid: 4326,
+				},
+				[]float64{-80.6665134, 35.0539943},
+			},
+		},
+	}
+
+	var sb bytes.Buffer
+	err := Encode(expected, &sb)
+
+	if err != nil {
+		t.Fatalf("failed to marshal MultiPoint: %s", err)
+	}
+
+	got := make(map[string]interface{})
+	err = json.Unmarshal(sb.Bytes(), &got)
+
+	if err != nil {
+		t.Fatalf("Failed to parse generated GeoJSON: error %s", err)
+	}
+
+	t.Logf("%s\n", string(sb.Bytes()))
+
+	assert.Equal(t, "MultiPoint", got["type"])
+
+	coords := got["coordinates"].([]interface{})
+
+	assert.Equal(t, 2, len(coords))
+
+	coord := coords[0].([]interface{})
+
+	for idx, value := range expected.Points[0].Coordinate {
+		assert.InDelta(t, value, coord[idx].(float64), 1e-9)
+	}
+
+	coord = coords[1].([]interface{})
+
+	for idx, value := range expected.Points[1].Coordinate {
+		assert.InDelta(t, value, coord[idx].(float64), 1e-9)
+	}
+
+}
+
 func TestEncodeLineString(t *testing.T) {
 	expected := &geom.LineString{
 		geom.Hdr{
