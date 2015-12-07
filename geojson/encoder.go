@@ -26,16 +26,19 @@ import (
 
 // snippets of geojson
 var (
-	pointHdr      = []byte(`{"type":"Point","coordinates":`)
-	linestringHdr = []byte(`{"type":"LineString", "coordinates":`)
-	polygonHdr    = []byte(`{"type":"Polygon", "coordinates":`)
-	multiPointHdr = []byte(`{"type":"MultiPoint","coordinates":`)
-	dquote        = []byte(`"`)
-	comma         = []byte(`,`)
-	lbrace        = []byte(`{`)
-	rbrace        = []byte(`}`)
-	lparen        = []byte(`[`)
-	rparen        = []byte(`]`)
+	pointHdr           = []byte(`{"type":"Point","coordinates":`)
+	linestringHdr      = []byte(`{"type":"LineString", "coordinates":`)
+	multiLineStringHdr = []byte(`{"type":"MultiLineString", "coordinates":`)
+	polygonHdr         = []byte(`{"type":"Polygon", "coordinates":`)
+	multiPolygonHdr    = []byte(`{"type":"MultiPolygon", "coordinates":`)
+	multiPointHdr      = []byte(`{"type":"MultiPoint","coordinates":`)
+	geomCollectionHdr  = []byte(`{"type":"GeometryCollection", "geometries":`)
+	dquote             = []byte(`"`)
+	comma              = []byte(`,`)
+	lbrace             = []byte(`{`)
+	rbrace             = []byte(`}`)
+	lparen             = []byte(`[`)
+	rparen             = []byte(`]`)
 )
 
 func Encode(g geom.Geometry, w io.Writer) error {
@@ -46,11 +49,16 @@ func Encode(g geom.Geometry, w io.Writer) error {
 		return marshalMultiPoint(g, w)
 	case *geom.LineString:
 		return marshalLineString(g, w)
+	case *geom.MultiLineString:
+		return marshalMultiLineString(g, w)
 	case *geom.Polygon:
 		return marshalPolygon(g, w)
+	case *geom.MultiPolygon:
+		return marshalMultiPolygon(g, w)
+	case *geom.GeometryCollection:
+		return marshalGeometryCollection(g, w)
 	default:
 		return geom.ErrUnsupportedGeom
-
 	}
 }
 
@@ -74,6 +82,39 @@ func marshalPolygon(p *geom.Polygon, w io.Writer) error {
 	return err
 }
 
+func marshalMultiPolygon(mp *geom.MultiPolygon, w io.Writer) error {
+	var sb bytes.Buffer
+	sb.Write(multiPolygonHdr)
+	sb.Write(lparen)
+
+	plimit := len(mp.Polygons) - 1
+	for pidx, polygon := range mp.Polygons {
+		sb.Write(lparen)
+
+		rlimit := len(polygon.Rings) - 1
+		for ridx, lring := range polygon.Rings {
+			marshalLinearRing(&lring, &sb)
+
+			if ridx < rlimit {
+				sb.Write(comma)
+			}
+		}
+
+		sb.Write(rparen)
+
+		if pidx < plimit {
+			sb.Write(comma)
+		}
+	}
+
+	sb.Write(rparen)
+	sb.Write(rbrace)
+
+	_, err := w.Write(sb.Bytes())
+
+	return err
+}
+
 func marshalLineString(ls *geom.LineString, w io.Writer) error {
 	var sb bytes.Buffer
 	sb.Write(linestringHdr)
@@ -86,6 +127,39 @@ func marshalLineString(ls *geom.LineString, w io.Writer) error {
 			sb.Write(comma)
 		}
 	}
+	sb.Write(rparen)
+	sb.Write(rbrace)
+
+	_, err := w.Write(sb.Bytes())
+
+	return err
+}
+
+func marshalMultiLineString(mp *geom.MultiLineString, w io.Writer) error {
+	var sb bytes.Buffer
+	sb.Write(multiLineStringHdr)
+	sb.Write(lparen)
+
+	llimit := len(mp.LineStrings) - 1
+	for lidx, linestring := range mp.LineStrings {
+		sb.Write(lparen)
+
+		limit := len(linestring.Coordinates) - 1
+		for idx, coord := range linestring.Coordinates {
+			marshalCoord(&coord, &sb)
+
+			if idx < limit {
+				sb.Write(comma)
+			}
+		}
+
+		sb.Write(rparen)
+
+		if lidx < llimit {
+			sb.Write(comma)
+		}
+	}
+
 	sb.Write(rparen)
 	sb.Write(rbrace)
 
@@ -121,6 +195,44 @@ func marshalMultiPoint(mp *geom.MultiPoint, w io.Writer) error {
 		}
 	}
 
+	sb.Write(rparen)
+	sb.Write(rbrace)
+
+	_, err := w.Write(sb.Bytes())
+
+	return err
+}
+
+func marshalGeometryCollection(gc *geom.GeometryCollection, w io.Writer) error {
+	var sb bytes.Buffer
+	sb.Write(geomCollectionHdr)
+	sb.Write(lparen)
+	limit := len(gc.Geometries) - 1
+	for idx, g := range gc.Geometries {
+
+		switch g := g.(type) {
+		case *geom.Point:
+			marshalPoint(g, &sb)
+		case *geom.MultiPoint:
+			marshalMultiPoint(g, &sb)
+		case *geom.LineString:
+			marshalLineString(g, &sb)
+		case *geom.MultiLineString:
+			marshalMultiLineString(g, &sb)
+		case *geom.Polygon:
+			marshalPolygon(g, &sb)
+		case *geom.MultiPolygon:
+			marshalMultiPolygon(g, &sb)
+		case *geom.GeometryCollection:
+			marshalGeometryCollection(g, &sb)
+		default:
+			return geom.ErrUnsupportedGeom
+		}
+
+		if idx < limit {
+			sb.Write(comma)
+		}
+	}
 	sb.Write(rparen)
 	sb.Write(rbrace)
 
