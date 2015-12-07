@@ -79,47 +79,6 @@ type Point struct {
 	Coordinate
 }
 
-// func (p *Point) GeoJSON(crs, bbox bool) string {
-// 	var sb bytes.Buffer
-// 	sb.WriteString(`{"type":"Point","coordinates":`)
-// 	p.Coordinate.appendGeoJSON(&sb)
-// 	sb.WriteString(`,`)
-// 	sb.WriteString(`"dim":"`)
-// 	sb.WriteString(p.Hdr.dim.String())
-// 	sb.WriteString(`"`)
-// 	if crs {
-// 		sb.WriteString(`,"crs":{"type":"name","properties":{"name":"EPSG:`)
-// 		sb.WriteString(strconv.FormatUint(uint64(p.srid), 10))
-// 		sb.WriteString(`"}}`)
-// 	}
-// 	sb.WriteString(`}`)
-// 	return sb.String()
-// }
-//
-// func (p *Point) EWKT() string {
-// 	var sb bytes.Buffer
-//
-// 	sb.WriteString("SRID=")
-// 	sb.WriteString(strconv.FormatUint(uint64(p.srid), 10))
-// 	sb.WriteString(";POINT")
-//
-// 	if p.dim == XYM {
-// 		sb.WriteString("M")
-// 	}
-// 	sb.WriteString("(")
-// 	sb.WriteString(strconv.FormatFloat(p.Coordinate[0], 'f', -1, 64))
-// 	for idx := 1; idx < len(p.Coordinate); idx++ {
-// 		sb.WriteString(" ")
-// 		sb.WriteString(strconv.FormatFloat(p.Coordinate[idx], 'f', -1, 64))
-// 	}
-// 	sb.WriteString(")")
-// 	return sb.String()
-// }
-//
-// func (p *Point) String() string {
-// 	return p.EWKT()
-// }
-
 // ----------------------------------------------------------------------------
 // MultiPoint
 // ----------------------------------------------------------------------------
@@ -178,45 +137,6 @@ type LineString struct {
 	Hdr
 	Coordinates []Coordinate
 }
-
-// func (p *LineString) GeoJSON(crs, bbox bool) string {
-// 	var sb bytes.Buffer
-// 	sb.WriteString(`{"type":"LineString", "coordinates":[`)
-// 	limit := len(p.Coordinates) - 1
-// 	for idx, coord := range p.Coordinates {
-// 		coord.appendGeoJSON(&sb)
-//
-// 		if idx < limit {
-// 			sb.WriteString(",")
-// 		}
-// 	}
-// 	sb.WriteString(`],`)
-// 	sb.WriteString(`"dim":"`)
-// 	sb.WriteString(p.Hdr.dim.String())
-// 	sb.WriteString(`"`)
-// 	if crs {
-// 		sb.WriteString(`,"crs":{"type":"name","properties":{"name":"EPSG:`)
-// 		sb.WriteString(strconv.FormatUint(uint64(p.srid), 10))
-// 		sb.WriteString(`"}}`)
-// 	}
-// 	sb.WriteString(`}`)
-//
-// 	return sb.String()
-// }
-//
-// func (p *LineString) EWKT() string {
-// 	var sb bytes.Buffer
-//
-// 	sb.WriteString("SRID=")
-// 	sb.WriteString(strconv.FormatUint(uint64(p.srid), 10))
-// 	sb.WriteString(";LINESTRING()")
-//
-// 	return sb.String()
-// }
-//
-// func (p *LineString) String() string {
-// 	return p.EWKT()
-// }
 
 // ----------------------------------------------------------------------------
 // MultiLineString
@@ -287,44 +207,6 @@ type Polygon struct {
 	Hdr
 	Rings []LinearRing
 }
-
-// func (p *Polygon) GeoJSON(crs, bbox bool) string {
-// 	var sb bytes.Buffer
-// 	sb.WriteString(`{"type":"Polygon", "coordinates":[`)
-// 	rlimit := len(p.Rings) - 1
-// 	for ridx, lring := range p.Rings {
-// 		lring.appendGeoJSON(&sb)
-//
-// 		if ridx < rlimit {
-// 			sb.WriteString(",")
-// 		}
-// 	}
-// 	sb.WriteString(`],`)
-// 	sb.WriteString(`"dim":"`)
-// 	sb.WriteString(p.Hdr.dim.String())
-// 	sb.WriteString(`"`)
-// 	if crs {
-// 		sb.WriteString(`,"crs":{"type":"name","properties":{"name":"EPSG:`)
-// 		sb.WriteString(strconv.FormatUint(uint64(p.srid), 10))
-// 		sb.WriteString(`"}}`)
-// 	}
-// 	sb.WriteString(`}`)
-// 	return sb.String()
-// }
-//
-// func (p *Polygon) EWKT() string {
-// 	var sb bytes.Buffer
-//
-// 	sb.WriteString("SRID=")
-// 	sb.WriteString(strconv.FormatUint(uint64(p.srid), 10))
-// 	sb.WriteString(";POLYGON()")
-//
-// 	return sb.String()
-// }
-//
-// func (p *Polygon) String() string {
-// 	return p.EWKT()
-// }
 
 // ----------------------------------------------------------------------------
 // MultiPolygon
@@ -441,20 +323,6 @@ type GeometryCollection struct {
 type LinearRing struct {
 	Coordinates []Coordinate
 }
-
-// func (l *LinearRing) appendGeoJSON(sb *bytes.Buffer) {
-// 	sb.WriteString("[")
-// 	limit := len(l.Coordinates) - 1
-//
-// 	for idx, coord := range l.Coordinates {
-// 		coord.appendGeoJSON(sb)
-//
-// 		if idx < limit {
-// 			sb.WriteString(",")
-// 		}
-// 	}
-// 	sb.WriteString("]")
-// }
 
 // ----------------------------------------------------------------------------
 // Coordinate
