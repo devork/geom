@@ -479,7 +479,6 @@ func TestEncodePolygon(t *testing.T) {
 	}
 
 	t.Logf("%s\n", string(sb.Bytes()))
-	t.Logf("%v", got)
 	assert.Equal(t, "Polygon", got["type"])
 
 	coords := got["coordinates"].([]interface{})
@@ -1052,5 +1051,138 @@ func TestEncodeMultiPolygon(t *testing.T) {
 			assert.InDelta(t, expected.Polygons[1].Rings[0].Coordinates[idx][jdx], value.(float64), 1e-9)
 		}
 
+	}
+}
+
+func TestEncodeGeometryCollection(t *testing.T) {
+	expected := &geom.GeometryCollection{
+		geom.Hdr{
+			Dim:  geom.XY,
+			Srid: 4326,
+		},
+		[]geom.Geometry{
+			&geom.Point{
+				geom.Hdr{Dim: geom.XY, Srid: 4326},
+				[]float64{-80.66080570220947, 35.04939206472683},
+			},
+			&geom.Polygon{
+				geom.Hdr{
+					Dim:  geom.XY,
+					Srid: 4326,
+				},
+				[]geom.LinearRing{
+					{
+						[]geom.Coordinate{
+							{-80.66458225250244, 35.04496519190309},
+							{-80.66344499588013, 35.04603679820616},
+							{-80.66258668899536, 35.045580049697556},
+							{-80.66387414932251, 35.044280059194946},
+							{-80.66458225250244, 35.04496519190309},
+						},
+					},
+				},
+			},
+			&geom.LineString{
+				geom.Hdr{
+					Dim:  geom.XY,
+					Srid: 4326,
+				},
+				[]geom.Coordinate{
+					{-80.66237211227417, 35.05950973022538},
+					{-80.66269397735596, 35.0592638296087},
+					{-80.66284418106079, 35.05893010615862},
+					{-80.66308021545409, 35.05833291342246},
+					{-80.66359519958496, 35.057753281001425},
+					{-80.66387414932251, 35.05740198662245},
+					{-80.66441059112549, 35.05703312589789},
+					{-80.66486120223999, 35.056787217822475},
+					{-80.66541910171509, 35.05650617911516},
+					{-80.66563367843628, 35.05631296444281},
+					{-80.66601991653441, 35.055891403570705},
+					{-80.66619157791138, 35.05545227534804},
+					{-80.66619157791138, 35.05517123204622},
+					{-80.66625595092773, 35.05489018777713},
+					{-80.6662130355835, 35.054222703761525},
+					{-80.6662130355835, 35.05392409072499},
+					{-80.66595554351807, 35.05290528508858},
+					{-80.66569805145262, 35.052044560077285},
+					{-80.66550493240356, 35.0514824490509},
+					{-80.665762424469, 35.05048117920187},
+					{-80.66617012023926, 35.04972582715769},
+					{-80.66651344299316, 35.049286665781096},
+					{-80.66692113876343, 35.0485313026898},
+					{-80.66700696945189, 35.048215102112344},
+					{-80.66707134246826, 35.04777593261294},
+					{-80.66704988479614, 35.04738946150025},
+					{-80.66696405410767, 35.04698542156371},
+					{-80.66681385040283, 35.046353007216055},
+					{-80.66659927368164, 35.04596652937105},
+					{-80.66640615463257, 35.04561518428889},
+					{-80.6659984588623, 35.045193568195565},
+					{-80.66552639007568, 35.044877354697526},
+					{-80.6649899482727, 35.04454357245502},
+					{-80.66449642181396, 35.04417465365292},
+					{-80.66385269165039, 35.04387600387859},
+					{-80.66303730010986, 35.043717894732545},
+				},
+			},
+		},
+	}
+
+	var sb bytes.Buffer
+	err := Encode(expected, &sb)
+
+	if err != nil {
+		t.Fatalf("failed to marshal polygon: %s", err)
+	}
+
+	got := make(map[string]interface{})
+	err = json.Unmarshal(sb.Bytes(), &got)
+
+	if err != nil {
+		t.Fatalf("Failed to parse generated GeoJSON: error %s", err)
+	}
+
+	t.Logf("%s\n", string(sb.Bytes()))
+	assert.Equal(t, "GeometryCollection", got["type"])
+
+	geoms := got["geometries"].([]interface{})
+
+	assert.Equal(t, 3, len(geoms))
+
+	point := geoms[0].(map[string]interface{})
+
+	assert.Equal(t, "Point", point["type"])
+	coords := point["coordinates"].([]interface{})
+	assert.Equal(t, expected.Geometries[0].(*geom.Point).Coordinate[0], coords[0].(float64))
+	assert.Equal(t, expected.Geometries[0].(*geom.Point).Coordinate[1], coords[1].(float64))
+
+	poly := geoms[1].(map[string]interface{})
+	assert.Equal(t, "Polygon", poly["type"])
+	lrings := poly["coordinates"].([]interface{})
+	assert.Equal(t, 1, len(lrings))
+	lring := lrings[0].([]interface{})
+
+	for idx, coord := range lring {
+		c := coord.([]interface{})
+
+		assert.Equal(t, 2, len(c))
+		assert.Equal(t, expected.Geometries[1].(*geom.Polygon).Rings[0].Coordinates[idx][0], c[0].(float64))
+		assert.Equal(t, expected.Geometries[1].(*geom.Polygon).Rings[0].Coordinates[idx][1], c[1].(float64))
+	}
+
+	lstring := geoms[2].(map[string]interface{})
+	assert.Equal(t, "LineString", lstring["type"])
+
+	coords = lstring["coordinates"].([]interface{})
+
+	assert.Equal(t, len(expected.Geometries[2].(*geom.LineString).Coordinates), len(coords))
+
+	for idx, coord := range coords {
+		c := coord.([]interface{})
+
+		assert.Equal(t, 2, len(c))
+		assert.Equal(t, expected.Geometries[2].(*geom.LineString).Coordinates[idx][0], c[0].(float64))
+		assert.Equal(t, expected.Geometries[2].(*geom.LineString).Coordinates[idx][1], c[1].(float64))
 	}
 }
