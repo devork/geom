@@ -115,7 +115,6 @@ func TestEncodeMultiPoint(t *testing.T) {
 	for idx, value := range expected.Points[1].Coordinate {
 		assert.InDelta(t, value, coord[idx].(float64), 1e-9)
 	}
-
 }
 
 func TestEncodeLineString(t *testing.T) {
@@ -183,7 +182,96 @@ func TestEncodeLineString(t *testing.T) {
 			assert.InDelta(t, value, c[jdx].(float64), 1e-9)
 		}
 	}
+}
 
+func TestEncodeMultiLineString(t *testing.T) {
+	expected := &geom.MultiLineString{
+		geom.Hdr{
+			Dim:  geom.XY,
+			Srid: 4326,
+		},
+		[]geom.LineString{
+			{
+				geom.Hdr{Dim: geom.XY, Srid: 4326},
+				[]geom.Coordinate{
+					{-105.0214433670044, 39.57805759162015},
+					{-105.02150774002075, 39.57780951131517},
+					{-105.02157211303711, 39.57749527498758},
+					{-105.02157211303711, 39.57716449836683},
+					{-105.02157211303711, 39.57703218727656},
+					{-105.02152919769287, 39.57678410330158},
+				},
+			},
+			{
+				geom.Hdr{Dim: geom.XY, Srid: 4326},
+				[]geom.Coordinate{
+					{-105.01989841461182, 39.574997872470774},
+					{-105.01959800720215, 39.57489863607502},
+					{-105.01906156539916, 39.57478286010041},
+				},
+			},
+			{
+				geom.Hdr{Dim: geom.XY, Srid: 4326},
+				[]geom.Coordinate{
+					{-105.01717329025269, 39.5744024519653},
+					{-105.01698017120361, 39.574385912433804},
+					{-105.0166368484497, 39.574385912433804},
+					{-105.01650810241699, 39.5744024519653},
+					{-105.0159502029419, 39.574270135602866},
+				},
+			},
+			{
+				geom.Hdr{Dim: geom.XY, Srid: 4326},
+				[]geom.Coordinate{
+					{-105.0142765045166, 39.57397242286402},
+					{-105.01412630081175, 39.57403858136094},
+					{-105.0138258934021, 39.57417089816531},
+					{-105.01331090927124, 39.57445207053608},
+				},
+			},
+		},
+	}
+
+	var sb bytes.Buffer
+	err := Encode(expected, &sb)
+
+	if err != nil {
+		t.Fatalf("failed to marshal multilinestring: %s", err)
+	}
+
+	got := make(map[string]interface{})
+	err = json.Unmarshal(sb.Bytes(), &got)
+
+	if err != nil {
+		t.Fatalf("Failed to parse generated GeoJSON: error %s", err)
+	}
+
+	t.Logf("%s\n", string(sb.Bytes()))
+
+	assert.Equal(t, "MultiLineString", got["type"])
+
+	coords := got["coordinates"].([]interface{})
+
+	assert.Equal(t, 4, len(coords))
+
+	for idx, linestring := range coords {
+		ls := linestring.([]interface{})
+
+		for jdx, coord := range ls {
+			c := coord.([]interface{})
+			for kdx, value := range c {
+				assert.InDelta(t, value.(float64), expected.LineStrings[idx].Coordinates[jdx][kdx], 1e-9)
+			}
+		}
+
+		for jdx, coord := range expected.LineStrings[idx].Coordinates {
+			c := ls[jdx].([]interface{})
+			for kdx, value := range coord {
+				t.Logf("%f => %f", value, c[kdx].(float64))
+				assert.InDelta(t, value, c[kdx].(float64), 1e-9)
+			}
+		}
+	}
 }
 
 func TestPolygon(t *testing.T) {
@@ -408,7 +496,6 @@ func TestPolygon(t *testing.T) {
 			assert.InDelta(t, value, coords[jdx].(float64), 1e-9)
 		}
 	}
-
 }
 
 func TestPolygonHoles(t *testing.T) {
