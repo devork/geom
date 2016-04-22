@@ -45,6 +45,7 @@ func (d Dimension) String() string {
 type Geometry interface {
 	Dimension() Dimension
 	SRID() uint32
+	Type() string
 }
 
 // Hdr represents core information about the geometry
@@ -67,10 +68,18 @@ type Point struct {
 	Coordinate
 }
 
+func (p *Point) Type() string {
+	return "point"
+}
+
 // MultiPoint
 type MultiPoint struct {
 	Hdr
 	Points []Point
+}
+
+func (m *MultiPoint) Type() string {
+	return "multipoint"
 }
 
 // LineString
@@ -79,10 +88,18 @@ type LineString struct {
 	Coordinates []Coordinate
 }
 
+func (l *LineString) Type() string {
+	return "linestring"
+}
+
 // MultiLineString
 type MultiLineString struct {
 	Hdr
 	LineStrings []LineString
+}
+
+func (l *MultiLineString) Type() string {
+	return "multilinestring"
 }
 
 // Polygon
@@ -91,16 +108,28 @@ type Polygon struct {
 	Rings []LinearRing
 }
 
+func (l *Polygon) Type() string {
+	return "polygon"
+}
+
 // MultiPolygon
 type MultiPolygon struct {
 	Hdr
 	Polygons []Polygon
 }
 
+func (l *MultiPolygon) Type() string {
+	return "multipolygon"
+}
+
 // GeometryCollection (a misnomer IMHO - should be called MultiGeometry)
 type GeometryCollection struct {
 	Hdr
 	Geometries []Geometry
+}
+
+func (l *GeometryCollection) Type() string {
+	return "geometrycollection"
 }
 
 // LinearRing

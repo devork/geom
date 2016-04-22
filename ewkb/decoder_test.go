@@ -165,6 +165,8 @@ func TestGeometryCollection(t *testing.T) {
 			t.Fatalf("Failed to convert geom: error = %s", err)
 		}
 
+		assert.Equal(t, "geometrycollection", g.Type())
+
 		gcol := g.(*geom.GeometryCollection)
 
 		t.Log(gcol)
@@ -218,6 +220,8 @@ func TestMultiPolygon(t *testing.T) {
 		if err != nil {
 			t.Fatal("Failed to parse MultiPolygon: err = ", err)
 		}
+
+		assert.Equal(t, "multipolygon", g.Type())
 
 		mpolygon := g.(*geom.MultiPolygon)
 
@@ -319,6 +323,8 @@ func TestMultiLineString(t *testing.T) {
 			t.Fatal("Failed to parse MultiLineString: err = ", err)
 		}
 
+		assert.Equal(t, "multilinestring", g.Type())
+
 		mlstring := g.(*geom.MultiLineString)
 
 		t.Log(mlstring)
@@ -387,6 +393,8 @@ func TestMultiPoint(t *testing.T) {
 			t.Fatal("Failed to parse MultiPoint: err = ", err)
 		}
 
+		assert.Equal(t, "multipoint", g.Type())
+
 		mpoint := g.(*geom.MultiPoint)
 
 		t.Log(mpoint)
@@ -437,6 +445,8 @@ func TestHolePolygon(t *testing.T) {
 		if err != nil {
 			t.Fatal("Failed to parse HolePolygon: err = ", err)
 		}
+
+		assert.Equal(t, "polygon", g.Type())
 
 		polygon := g.(*geom.Polygon)
 
@@ -512,6 +522,8 @@ func TestPolygon(t *testing.T) {
 			t.Fatal("Failed to parse Polygon: err = ", err)
 		}
 
+		assert.Equal(t, "polygon", g.Type())
+
 		polygon := g.(*geom.Polygon)
 
 		t.Log(polygon)
@@ -569,6 +581,8 @@ func TestLineString(t *testing.T) {
 		if err != nil {
 			t.Fatal("Failed to parse LineString: err = ", err)
 		}
+
+		assert.Equal(t, "linestring", g.Type())
 
 		lstring := g.(*geom.LineString)
 
@@ -661,6 +675,8 @@ func TestDimensionsAndEndian(t *testing.T) {
 		if err != nil {
 			t.Fatal("Failed to parse geom: err = ", err)
 		}
+
+		assert.Equal(t, "point", g.Type())
 
 		point := g.(*geom.Point)
 
